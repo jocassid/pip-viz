@@ -4,12 +4,12 @@ from argparse import ArgumentParser
 from json import loads
 from subprocess import run
 from sys import stderr
-from typing import List
+from typing import List, Set
 
 from graphviz import Digraph
 
 
-def get_requires(package_name: str) -> List[str]:
+def get_requirements(package_name: str) -> List[str]:
     pip_show_process = run(
         ['pip', 'show', package_name],
         capture_output=True,
@@ -30,6 +30,18 @@ def get_requires(package_name: str) -> List[str]:
     return []
 
 
+def add_node_to_graph(
+        node_name: str,
+        node_label: str,
+        node_set: Set[str],
+        graph: Digraph,
+):
+    if node_name in node_set:
+        return
+    graph.node(node_name, node_label)
+    node_set.add(node_name)
+
+
 def main(args):
     pip_list_process = run(
         ['pip', 'list', '--format', 'json'],
@@ -44,21 +56,23 @@ def main(args):
         graph_attr={'rankdir': 'LR'}
     )
 
-    for dependency in loads(pip_list_process.stdout):
-        name = dependency.get('name') or ''
-        if not name:
-            print(f"No name found in {dependency}", stderr)
+    node_names: Set[str] = set()
+
+    for package_dict in loads(pip_list_process.stdout):
+        package: str = package_dict.get('name') or ''
+        if not package:
+            print(f"No name found in {package_dict}", stderr)
             continue
 
-        print(f"Processing {name}")
-        graph.node(name)
+        print(f"Processing {package}")
 
-        requires = get_requires(name)
-        if not requires:
-            continue
+        package_node: str = package.lower()
+        add_node_to_graph(package_node, package, node_names, graph)
 
-        for requirement in requires:
-            graph.edge(name, requirement)
+        for requirement in get_requirements(package):
+            requirement_node = requirement.lower()
+            add_node_to_graph(requirement_node, requirement, node_names, graph)
+            graph.edge(package_node, requirement_node)
 
     graph.render()
 
