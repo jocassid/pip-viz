@@ -53,7 +53,12 @@ def main(args):
         args.filename_root,
         format='svg',
         node_attr={'shape': 'rectangle'},
-        graph_attr={'rankdir': 'LR'}
+        graph_attr={
+            'rankdir': 'LR',
+            'splines': "ortho",
+            'mclimit': '4.0',
+            'ranksep': '1.0',
+        }
     )
 
     node_names: Set[str] = set()
