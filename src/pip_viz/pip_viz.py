@@ -82,7 +82,7 @@ def main(args):
     graph.render()
 
 
-if __name__ == '__main__':
+def parse_args_and_call_main():
     parser = ArgumentParser()
     parser.add_argument(
         'filename_root',
@@ -90,3 +90,7 @@ if __name__ == '__main__':
         help="This script will generate 2 files: FILENAME_ROOT.gv AND FILENAME_ROOT.gv.svg"
     )
     main(parser.parse_args())
+
+
+if __name__ == '__main__':
+    parse_args_and_call_main()
