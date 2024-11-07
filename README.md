@@ -1,10 +1,17 @@
 
 # pip-viz
 
-A script that generates an svg image the dependencies within a pip virtual 
-environment.  `pip-viz` uses `graphviz` Python library to generate a `.gv` 
-file written in [Graphviz](https://graphviz.org)'s DOT language which is then
-fed into one of Graphviz's layout engines to render the diagram.
+A script that generates an SVG image displaying the dependencies within a pip 
+virtual environment.  
+
+`pip-viz` uses `graphviz` Python library to generate 
+a `.gv` file containing instructions written in [Graphviz](https://graphviz.org)'s
+DOT language.  The Graphviz application takes the instructions written in the
+`.gv` file and generates an image.  
+
+The [Graphviz](https://graphviz.org) application will need to be installed
+separately.  Linux, Windows, and Mac versions are available and the graphviz
+executable `dot` will need to be on your `PATH`.
 
 With your virtualenv active, install from the Python Package Index (PyPI) 
 with the following command:

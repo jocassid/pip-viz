@@ -12,6 +12,7 @@ test_pypi: build
 pypi: build
 	python -m twine upload dist/*
 
-
+test:
+	source ../pip-viz-venv/bin/activate; export PYTHONPATH='src'; pytest
 
 

@@ -15,3 +15,10 @@
 ## 0.0.4
 
 - Made this package pip installable
+
+## 0.0.5
+
+- Refactored, added version numbers for packages.
+- Added logging
+- Created some tests
+
