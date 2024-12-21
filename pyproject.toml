@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pip-viz"
-version = "0.0.5"
+version = "0.0.6"
 authors = [
   { name="John Cassidy", email="jocassid@gmail.com" },
 ]
@@ -27,7 +27,7 @@ dependencies = [
 ]
 
 [project.scripts]
-pip-viz = "pip_viz:parse_args_and_call_main"
+pip-viz = "pip_viz:main"
 
 [project.urls]
 Homepage = "https://github.com/jocassid/pip-viz"

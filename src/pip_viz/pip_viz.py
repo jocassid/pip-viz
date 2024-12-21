@@ -155,7 +155,7 @@ class PipViz:
         graph.render()
 
 
-if __name__ == '__main__':
+def main():
     basicConfig(
         format=" %(levelname)s:%(asctime)s:%(filename)s:%(lineno)d:%(message)s",
         filename='pip_viz.log',
@@ -172,3 +172,6 @@ if __name__ == '__main__':
     pip_viz = PipViz()
     pip_viz.run(parser.parse_args())
 
+
+if __name__ == '__main__':
+    main()
