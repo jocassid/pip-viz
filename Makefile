@@ -7,12 +7,13 @@ build: clean
 	python -m build
 
 test_pypi: build
-	python -m twine upload --repository testpypi dist/*
+	python -m twine upload --verbose --repository testpypi dist/*
 
 pypi: build
 	python -m twine upload dist/*
 
 test:
-	source ../pip-viz-venv/bin/activate; export PYTHONPATH='src'; pytest
+	. ../pip-viz-venv/bin/activate; export PYTHONPATH='src'; pytest
 
-
+upgrade_pypi_tools:
+	. ../pip-viz-venv/bin/activate; pip install --upgrade build twine pkginfo

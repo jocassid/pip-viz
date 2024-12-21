@@ -5,7 +5,11 @@ build-backend = "hatchling.build"
 [project]
 name = "pip-viz"
 version = "0.0.6"
+license = {file = "LICENSE"}
 authors = [
+  { name="John Cassidy", email="jocassid@gmail.com" },
+]
+maintainers = [
   { name="John Cassidy", email="jocassid@gmail.com" },
 ]
 description = "A package that generates a graph of dependencies using Graphviz"
@@ -23,7 +27,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-  "graphviz",
+  "graphviz>=0.20.2",
 ]
 
 [project.scripts]
@@ -31,4 +35,7 @@ pip-viz = "pip_viz:main"
 
 [project.urls]
 Homepage = "https://github.com/jocassid/pip-viz"
+Documentation = "https://github.com/jocassid/pip-viz/blob/main/README.md"
+Repository = "https://github.com/jocassid/pip-viz.git"
 Issues = "https://github.com/jocassid/pip-viz/issues"
+Changelog = "https://github.com/jocassid/pip-viz/blob/main/README.md"
