@@ -4,7 +4,6 @@ from argparse import ArgumentParser
 from json import loads
 from logging import basicConfig, DEBUG, getLogger
 from subprocess import run
-from sys import stderr
 from typing import Dict, List, Tuple
 
 from graphviz import Digraph
@@ -33,6 +32,13 @@ class Package:
         self._name = name
         self.compare_value = self.get_compare_value(name)
 
+    def get_all_dependencies(self):
+        dependencies = set()
+        for dependency in self.dependencies.values():
+            dependencies.add(dependency)
+            dependencies.update(dependency.get_all_dependencies())
+        return dependencies
+
     def __hash__(self):
         return hash(self.compare_value)
 
@@ -45,18 +51,24 @@ class Package:
             return False
         return True
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}('{self.name}')"
+
 
 class PipViz:
 
     def run(self, args):
         logger.info("pip-viz start")
+        logger.debug(f"{args=}")
         packages: Dict[str, Package] = self.get_packages()
+        if not args.all:
+            self.ignore_pip_viz_and_empty_venv_packages(packages)
         self.render(packages, args.filename_root)
 
     @staticmethod
     def pip_list() -> List[dict]:
         args = ['pip', 'list', '--format', 'json']
-        logger.debug(f"{args=}")
+        logger.debug(f"{args}")
         pip_list_process = run(
             args,
             capture_output=True,
@@ -97,7 +109,7 @@ class PipViz:
     @staticmethod
     def run_pip_show(package_name: str):
         args = ['pip', 'show', package_name]
-        logger.debug(f"{args=}")
+        logger.debug(f"{args}")
         pip_show_process = run(
             args,
             capture_output=True,
@@ -126,7 +138,50 @@ class PipViz:
 
         return name, requirements
 
-    def render(self, packages: Dict[str, Package], filename_root: str):
+    @staticmethod
+    def ignore_pip_viz_and_empty_venv_packages(packages: Dict[str, Package]):
+        logger.info(
+            f"ignoring empty venv packages and pip-viz and it's dependencies"
+        )
+        empty_venv_packages = {
+            'pip',
+            Package.get_compare_value('pkg-resources'),
+            'setuptools',
+        }
+
+        pip_viz_and_dependencies = set()
+        pip_viz_package = packages.get(
+            Package.get_compare_value('pip-viz'),
+        )
+        if pip_viz_package:
+            pip_viz_and_dependencies.add(pip_viz_package.compare_value)
+
+            all_dependencies = {
+                p.compare_value for p in pip_viz_package.get_all_dependencies()
+            }
+            pip_viz_and_dependencies |= all_dependencies
+
+        ignored_packages = empty_venv_packages | pip_viz_and_dependencies
+        logger.info(f"{ignored_packages=}")
+
+        # package in ignore packages will be ignored unless it's a
+        # dependency of something else.
+        for package in packages.values():
+            compare_name = package.compare_value
+            if compare_name in ignored_packages:
+                continue
+
+            depends_on_ignored = ignored_packages & package.dependencies.keys()
+            if depends_on_ignored:
+                ignored_packages -= depends_on_ignored
+
+        for ignored_packages in ignored_packages:
+            packages.pop(ignored_packages, None)
+
+        return packages
+
+    @staticmethod
+    def render(packages: Dict[str, Package], filename_root: str):
         graph = Digraph(
             filename_root,
             format='svg',
@@ -163,6 +218,14 @@ def main():
     )
 
     parser = ArgumentParser()
+    parser.add_argument(
+        '-a', '--all',
+        action='store_true',
+        help="by default pip-viz and it's dependencies as well as: pip, "
+             "pkg-resources, and setuptools are omitted from the diagram "
+             "unless those packages are required by something else in the "
+             "environment  To include these packages use this flag."
+    )
     parser.add_argument(
         'filename_root',
         metavar='FILENAME_ROOT',

@@ -32,7 +32,17 @@ This command will generate two files in the current working directory:
 browser.  You can use the zoom, scroll, and find features of your browser to 
 navigate the diagram.
 
+By default, pip-viz and it's dependencies as well as packages that are present
+in a newly created virtualenv will be ignored unless:
+1. The package is a dependency of a package which is not ignored
+2. The `-a` (or `--all`) command line flag is used.
+
 ## Changelog
+
+### 0.0.7
+
+- Ignoring pip-viz and its dependencies as well as packages that are present
+  in a newly created virtualenv 
 
 ### 0.0.6
 

@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 from pip_viz.pip_viz import Package, PipViz
 
 
-class TestRequirement:
+class TestPackage:
 
     def test_hash(self):
         requirement = Package('Foo-Bar')
@@ -29,6 +29,20 @@ class TestRequirement:
         requirement3 = Package('yadayada')
         assert requirement1 == requirement2
         assert requirement1 != requirement3
+
+    def test_get_all_dependencies(self):
+        pkg1 = Package('I')
+
+        pkg2 = Package('I.A')
+        pkg3 = Package('I.B')
+        pkg1.dependencies.update({
+            pkg2.compare_value: pkg2,
+            pkg3.compare_value: pkg3,
+        })
+
+        pkg4 = Package('I.A.1')
+        pkg2.dependencies[pkg4.compare_value] = pkg4
+        assert pkg1.get_all_dependencies() == {pkg2, pkg3, pkg4}
 
 
 class TestPipViz:
@@ -84,7 +98,47 @@ class TestPipViz:
         expected_requirements = ['packaging', 'pluggy', 'iniconfig', 'exceptiongroup', 'tomli']
         assert requirements == expected_requirements
 
+    def test_ignore_pip_viz_and_empty_venv_packages(self):
+        pkg1 = Package('pip')
+        pkg2 = Package('pkg-resources')
 
+        pkg3 = Package('pip-viz')
+        pkg4 = Package('graphviz')
+        pkg3.dependencies[pkg4.compare_value] = pkg4
 
+        pkg5 = Package('requests')
 
+        packages = {}
+        for pkg in (pkg1, pkg2, pkg3, pkg4, pkg5):
+            packages[pkg.compare_value] = pkg
 
+        packages = PipViz.ignore_pip_viz_and_empty_venv_packages(packages)
+        assert packages == {pkg5.compare_value: pkg5}
+
+    def test_ignore_pip_viz_and_empty_venv_packages__graphviz_used_elsewhere(self):
+        pkg_pip = Package('pip')
+        pkg_pkg_resources = Package('pkg-resources')
+
+        pkg_pip_viz = Package('pip-viz')
+        pkg_graphviz = Package('graphviz')
+        pkg_pip_viz.dependencies[pkg_graphviz.compare_value] = pkg_graphviz
+
+        pkg_requests = Package('requests')
+
+        pkg_diagrams = Package('diagrams')
+        pkg_diagrams.dependencies[pkg_graphviz.compare_value] = pkg_graphviz
+
+        packages = {}
+        for pkg in (
+                pkg_pip, pkg_pkg_resources, pkg_pip_viz,
+                pkg_graphviz, pkg_requests, pkg_diagrams,
+        ):
+            packages[pkg.compare_value] = pkg
+
+        packages = PipViz.ignore_pip_viz_and_empty_venv_packages(packages)
+        expected = {
+            pkg_requests.compare_value: pkg_requests,
+            pkg_diagrams.compare_value: pkg_diagrams,
+            pkg_graphviz.compare_value: pkg_graphviz,
+        }
+        assert packages == expected
